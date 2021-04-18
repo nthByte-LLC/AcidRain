@@ -1,10 +1,12 @@
 package net.dohaw.acidrain;
 
+import net.dohaw.corelib.helpers.MathHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -83,20 +85,18 @@ public class AcidRainCommand implements CommandExecutor {
 
                     LocalDateTime localStartTime = LocalDateTime.parse(startSequence, AcidRainPlugin.formatter);
                     ZonedDateTime startDate = ZonedDateTime.of(localStartTime, AcidRainPlugin.zone);
-                    System.out.printf("START: %s\n" , startDate.format(AcidRainPlugin.formatter));
 
                     String endSequence = endDateStr + " " + endTimeStr;
                     LocalDateTime localEndTime = LocalDateTime.parse(endSequence, AcidRainPlugin.formatter);
                     ZonedDateTime endDate = ZonedDateTime.of(localEndTime, AcidRainPlugin.zone);
-                    System.out.printf("END: %s\n" , endDate.format(AcidRainPlugin.formatter));
 
                     ZonedDateTime now = ZonedDateTime.now(AcidRainPlugin.zone);
-                    System.out.printf("NOW: %s\n" , now.format(AcidRainPlugin.formatter));
                     boolean isValidTimeRange = startDate.isBefore(endDate);
                     boolean isStartTimeValid = startDate.isAfter(now);
                     if(isValidTimeRange && isStartTimeValid){
                         ScheduleInfo scheduleInfo = new ScheduleInfo(startDate, endDate, worldName);
                         plugin.getScheduledInfo().add(scheduleInfo);
+                        sender.sendMessage("The schedule has been set!");
                     }else{
                         sender.sendMessage("There has been an issue!");
                         if(!isValidTimeRange){
@@ -106,6 +106,34 @@ public class AcidRainCommand implements CommandExecutor {
                         }
                     }
 
+                }
+
+            }else if(args[0].equalsIgnoreCase("schedule") && args[1].equalsIgnoreCase("list") && args.length == 2){
+
+                sender.sendMessage("Current Schedules: ");
+                sender.sendMessage("===================");
+                for (int i = 0; i < plugin.getScheduledInfo().size(); i++) {
+
+                    ScheduleInfo info = plugin.getScheduledInfo().get(i);
+                    if(i != plugin.getScheduledInfo().size() - 1){
+                        sender.sendMessage(i + 1 + ".) " + info + "\n");
+                    }else{
+                        sender.sendMessage(i + 1 + ".) " + info);
+                    }
+
+                }
+            }else if(args[0].equalsIgnoreCase("schedule") && args[1].equalsIgnoreCase("delete") && args.length == 3){
+
+                String potentialNum = args[2];
+                if(MathHelper.isInt(potentialNum)){
+                    int num = Integer.parseInt(potentialNum);
+                    int maxNum = plugin.getScheduledInfo().size();
+                    if(num > 0 && num <= maxNum){
+                        plugin.getScheduledInfo().remove(num - 1);
+                        sender.sendMessage("This schedule has been removed!");
+                    }else{
+                        sender.sendMessage("This is not a valid number!");
+                    }
                 }
 
             }

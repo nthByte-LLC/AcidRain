@@ -26,4 +26,9 @@ public class ScheduleInfo {
         return world;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Start Time: %s | End Time: %s" , AcidRainPlugin.formatter.format(startTimeAndDate), AcidRainPlugin.formatter.format(endTimeAndDate));
+    }
+
 }
