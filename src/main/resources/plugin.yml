@@ -1,0 +1,11 @@
+name: AcidRain
+version: ${project.version}
+main: net.dohaw.acidrain.AcidRainPlugin
+api-version: 1.13
+
+commands:
+  acidrain:
+    aliases:
+      - ar
+      - acidr
+      - arain
