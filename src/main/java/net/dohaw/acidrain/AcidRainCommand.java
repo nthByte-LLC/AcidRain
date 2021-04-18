@@ -122,6 +122,7 @@ public class AcidRainCommand implements CommandExecutor {
                     }
 
                 }
+
             }else if(args[0].equalsIgnoreCase("schedule") && args[1].equalsIgnoreCase("delete") && args.length == 3){
 
                 String potentialNum = args[2];

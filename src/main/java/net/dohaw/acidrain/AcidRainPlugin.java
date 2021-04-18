@@ -21,6 +21,7 @@ public final class AcidRainPlugin extends JavaPlugin {
     public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
     public static ZoneId zone = ZoneId.of("Europe/Amsterdam");
 
+    private SchedulesConfig schedulesConfig;
     private BaseConfig config;
     private HashSet<String> rainyWorlds = new HashSet<>();
 
@@ -30,13 +31,17 @@ public final class AcidRainPlugin extends JavaPlugin {
     public void onEnable() {
 
         CoreLib.setInstance(this);
-        JPUtils.validateFiles("config.yml");
+        JPUtils.validateFiles("config.yml", "schedules.yml");
         JPUtils.registerEvents(new AcidRainListener(this));
         JPUtils.registerCommand("acidrain", new AcidRainCommand(this));
         this.config = new BaseConfig();
-        new AcidRainChecker(this).runTaskTimer(this, 0L, (long) (config.getDamageInterval() * 20L));
 
+        this.schedulesConfig = new SchedulesConfig();
+        this.scheduledInfo = schedulesConfig.loadSchedules();
+
+        new AcidRainChecker(this).runTaskTimer(this, 0L, (long) (config.getDamageInterval() * 20L));
         Bukkit.getScheduler().runTaskTimer(this, () -> {
+
             for(ScheduleInfo info : scheduledInfo){
 
                 ZonedDateTime now = ZonedDateTime.now(zone);
@@ -58,13 +63,14 @@ public final class AcidRainPlugin extends JavaPlugin {
                 }
 
             }
+
         }, 0L, 20L);
 
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        schedulesConfig.saveSchedules(scheduledInfo);
     }
 
     public HashSet<String> getRainyWorlds() {
