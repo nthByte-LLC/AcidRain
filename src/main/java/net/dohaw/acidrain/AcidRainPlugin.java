@@ -32,7 +32,6 @@ public final class AcidRainPlugin extends JavaPlugin {
 
         CoreLib.setInstance(this);
         JPUtils.validateFiles("config.yml", "schedules.yml");
-        JPUtils.registerEvents(new AcidRainListener(this));
         JPUtils.registerCommand("acidrain", new AcidRainCommand(this));
         this.config = new BaseConfig();
 

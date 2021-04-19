@@ -54,6 +54,7 @@ public class AcidRainCommand implements CommandExecutor {
                     HashSet<String> rainyWorlds = plugin.getRainyWorlds();
                     if(rainyWorlds.contains(worldName)){
                         plugin.stopRain(potentialWorld);
+                        sender.sendMessage("Acid rain has stopped in the world \"" + worldName + "\".");
                     }else{
                         sender.sendMessage("It isn't acid raining in this world!");
                     }
