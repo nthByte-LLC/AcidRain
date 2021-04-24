@@ -33,6 +33,10 @@ public final class AcidRainPlugin extends JavaPlugin {
     private HashSet<String> rainyWorlds = new HashSet<>();
 
     private List<ScheduleInfo> scheduledInfo = new ArrayList<>();
+    private List<String> reminderIntervals = new ArrayList<>();
+    // The intervals that have already been announced
+    private List<String> reminderIntervalsAnnounced = new ArrayList<>();
+    private String prefix;
 
     @Override
     public void onEnable() {
@@ -41,6 +45,8 @@ public final class AcidRainPlugin extends JavaPlugin {
         JPUtils.validateFiles("config.yml", "schedules.yml");
         JPUtils.registerCommand("acidrain", new AcidRainCommand(this));
         this.config = new BaseConfig();
+        this.reminderIntervals = config.getReminderIntervals();
+        this.prefix = config.getPrefix();
 
         this.schedulesConfig = new SchedulesConfig();
         this.scheduledInfo = schedulesConfig.loadSchedules();
@@ -59,13 +65,19 @@ public final class AcidRainPlugin extends JavaPlugin {
                 boolean isWorldRaining = rainyWorlds.contains(worldName);
                 if(isSameTime(now, startTime) && !isWorldRaining){
                     makeItRain(world);
+                    Bukkit.broadcastMessage(prefix + " Acid rain has begun!");
                 }else if(isSameTime(now, endTime) && isWorldRaining){
                     stopRain(world);
+                    Bukkit.broadcastMessage(prefix + " Acid rain has stopped!");
                 }else{
+
+                    checkForReminders(now, startTime, endTime);
+
                     // Makes it continuously rain
                     if(isWorldRaining){
                         world.setWeatherDuration(30);
                     }
+
                 }
 
             }
@@ -158,5 +170,84 @@ public final class AcidRainPlugin extends JavaPlugin {
 
         } catch (Exception ignored) { }
     }
+
+    private void checkForReminders(ZonedDateTime now, ZonedDateTime start, ZonedDateTime end){
+
+        boolean isBeforeStart = now.isBefore(start);
+        if(!now.isAfter(end)){
+
+            for(String reminderStr : reminderIntervals){
+
+                if(!reminderIntervalsAnnounced.contains(reminderStr)){
+
+                    String containedTimeUnit = getContainedTimeUnit(reminderStr);
+                    if(containedTimeUnit != null){
+
+                        long subAmount = Long.parseLong(reminderStr.replace(containedTimeUnit, ""));
+                        ZonedDateTime reminderTime;
+                        if(isBeforeStart){
+                            reminderTime = getReminderTime(containedTimeUnit, subAmount, start);
+                        }else{
+                            reminderTime = getReminderTime(containedTimeUnit, subAmount, end);
+                        }
+
+                        if(isSameTime(now, reminderTime)){
+
+                            String unitDisplay = containedTimeUnit.equalsIgnoreCase("hr") ? "hour(s)" : "minute(s)";
+                            if(isBeforeStart){
+                                Bukkit.broadcastMessage(prefix + " Acid rain will begin in about " + subAmount + " " +unitDisplay);
+                            }else{
+                                Bukkit.broadcastMessage(prefix + " Acid rain will end in about " + subAmount + " " +unitDisplay);
+                            }
+                            reminderIntervalsAnnounced.add(reminderStr);
+                            // Removes the reminder interval from the announced list in about a minute
+                            Bukkit.getScheduler().runTaskLater(this, () -> {
+                                reminderIntervalsAnnounced.remove(reminderStr);
+                            }, 20L * 65);
+
+                        }
+
+                    }else{
+                        throw new IllegalArgumentException("This reminder interval contains an invalid time unit: " + reminderStr);
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+    private String getContainedTimeUnit(String reminderStr){
+        final String[] timeUnits = {"hr", "min"};
+        String containedTimeUnit = null;
+        // Gets the number alone
+        for(String unit : timeUnits){
+            if(reminderStr.contains(unit)){
+                containedTimeUnit = unit;
+                break;
+            }
+        }
+        return containedTimeUnit;
+    }
+
+    private ZonedDateTime getReminderTime(String timeUnit, long subAmount, ZonedDateTime time){
+
+        ZonedDateTime reminderTime = null;
+        if(timeUnit.equalsIgnoreCase("hr")){
+            reminderTime = time.minusHours(subAmount);
+        }else if(timeUnit.equalsIgnoreCase("min")){
+            reminderTime = time.minusMinutes(subAmount);
+        }
+
+        return reminderTime;
+
+    }
+
+//    public boolean isReminderTime(String reminderStr, ZonedDateTime startOrEnd, ZonedDateTime now){
+//        ZonedDateTime reminderTime = getReminderTime(reminderStr, startOrEnd);
+//        return isSameTime(now, reminderTime);
+//    }
 
 }

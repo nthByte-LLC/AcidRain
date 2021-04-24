@@ -1,7 +1,10 @@
 package net.dohaw.acidrain;
 
 import net.dohaw.corelib.Config;
+import net.dohaw.corelib.StringUtils;
 import org.bukkit.Material;
+
+import java.util.List;
 
 public class BaseConfig extends Config {
 
@@ -29,6 +32,14 @@ public class BaseConfig extends Config {
         }
         return materialHelmet;
 
+    }
+
+    public List<String> getReminderIntervals(){
+        return getCommaList("Reminder Intervals");
+    }
+
+    public String getPrefix(){
+        return StringUtils.colorString(config.getString("Prefix"));
     }
 
 }

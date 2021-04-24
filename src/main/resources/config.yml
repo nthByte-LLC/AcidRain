@@ -3,3 +3,5 @@ Damage From Rain: 0.5
 Damage Interval: 0.69
 
 Material Helmet Given: IRON_HELMET
+Reminder Intervals: 1hr, 10min, 5min, 1min
+Prefix: "[&b&lAnnouncer&f]"
