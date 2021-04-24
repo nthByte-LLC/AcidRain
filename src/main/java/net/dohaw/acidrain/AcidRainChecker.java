@@ -5,6 +5,8 @@ import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
@@ -30,7 +32,7 @@ public class AcidRainChecker extends BukkitRunnable {
             HashSet<String> rainyWorlds = plugin.getRainyWorlds();
             // It's raining
             if(rainyWorlds.contains(worldName)){
-                if(isExposedToRain(player)){
+                if(isExposedToRain(player) && !hasAcidRainProtection(player)){
 
                     double playerHealth = player.getHealth();
                     double damageFromRain = config.getDamageFromRain();
@@ -55,6 +57,16 @@ public class AcidRainChecker extends BukkitRunnable {
         int highestBlock = player.getWorld().getHighestBlockYAt(playerLocation);
         double playerYLevel = playerLocation.getY();
         return highestBlock < playerYLevel;
+    }
+
+    private boolean hasAcidRainProtection(Player player){
+        ItemStack helmet = player.getEquipment().getHelmet();
+        if(helmet != null){
+            if(helmet.hasItemMeta()){
+                return helmet.getItemMeta().hasEnchant(AcidRainPlugin.acidRainProtection);
+            }
+        }
+        return false;
     }
 
 }

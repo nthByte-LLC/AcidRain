@@ -1,6 +1,7 @@
 package net.dohaw.acidrain;
 
 import net.dohaw.corelib.Config;
+import org.bukkit.Material;
 
 public class BaseConfig extends Config {
 
@@ -15,6 +16,19 @@ public class BaseConfig extends Config {
 
     public double getDamageInterval(){
         return config.getDouble("Damage Interval");
+    }
+
+    public Material getMaterialHelmet(){
+
+        String materialStr = config.getString("Material Helmet Given");
+        Material materialHelmet;
+        try{
+            materialHelmet = Material.valueOf(materialStr);
+        }catch(IllegalArgumentException | NullPointerException e){
+            materialHelmet = Material.IRON_HELMET;
+        }
+        return materialHelmet;
+
     }
 
 }

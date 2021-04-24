@@ -1,17 +1,23 @@
 package net.dohaw.acidrain;
 
+import net.dohaw.corelib.StringUtils;
 import net.dohaw.corelib.helpers.MathHelper;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class AcidRainCommand implements CommandExecutor {
 
@@ -138,11 +144,57 @@ public class AcidRainCommand implements CommandExecutor {
                     }
                 }
 
+            }else if(args[0].equalsIgnoreCase("enchant")){
+
+                if(sender instanceof Player){
+                    Player player = (Player) sender;
+                    ItemStack itemInHand = player.getItemInHand();
+                    if(itemInHand.getType() != Material.AIR){
+                        if(AcidRainPlugin.acidRainProtection.canEnchantItem(itemInHand)){
+                            enchantItem(itemInHand);
+                            player.setItemInHand(itemInHand);
+                            sender.sendMessage("Your item has gotten the Acid Rain Protection enchantment!");
+                        }else{
+                            sender.sendMessage("This enchantment can only go on helmets!");
+                        }
+                    }else{
+                        sender.sendMessage("You have nothing in your hand to enchant!");
+                    }
+                }else{
+                    sender.sendMessage("Only players can run this command!");
+                }
+
+            }else if(args[0].equalsIgnoreCase("helm") && args.length == 2){
+
+                String playerName = args[1];
+                Player potentialPlayer = Bukkit.getPlayer(playerName);
+                if(potentialPlayer != null){
+                    ItemStack helmet = new ItemStack(plugin.getBaseConfig().getMaterialHelmet());
+                    enchantItem(helmet);
+                    potentialPlayer.getInventory().addItem(helmet);
+                    potentialPlayer.sendMessage("You have been given a helmet with acid rain protection!");
+                }else{
+                    sender.sendMessage("This is not a valid player!");
+                }
+
             }
 
         }
 
         return false;
+    }
+
+    private void enchantItem(ItemStack helmet){
+
+        AcidRainProtection enchant = AcidRainPlugin.acidRainProtection;
+        ItemMeta meta = helmet.getItemMeta();
+        meta.addEnchant(enchant, 1, true);
+
+        List<String> lore = new ArrayList<>();
+        lore.add(StringUtils.colorString("&bHas Rain Protection"));
+        meta.setLore(lore);
+
+        helmet.setItemMeta(meta);
     }
 
     private boolean isValidDate(String[] dateArr){
